@@ -21,10 +21,20 @@ async function run() {
     try {
         // collections
         const categoriesCollection = client.db("mobileHeaven").collection("categories");
+        const usersCollection = client.db("mobileHeaven").collection("users");
 
+        // fetch categories 
         app.get('/categories', async (req, res) => {
             const query = {};
             const result = await categoriesCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        // add users 
+        app.post('/users' , async(req, res)=>{
+            const user = req.body;
+            // console.log(user);
+            const result = await usersCollection.insertOne(user);
             res.send(result);
         });
 
