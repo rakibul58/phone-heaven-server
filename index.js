@@ -22,7 +22,7 @@ function verifyJWT(req, res, next) {
         return res.status(401).send({ message: 'unauthorized access' });
     }
     const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
         if (err) {
             return res.status(403).send({ message: 'Forbidden access' });
         }
@@ -42,7 +42,7 @@ async function run() {
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
 
-            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '7h' });
+            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
             return res.send({ accessToken: token });
 
         });
@@ -51,6 +51,14 @@ async function run() {
         app.get('/categories', async (req, res) => {
             const query = {};
             const result = await categoriesCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        //get  user
+        app.get('/users', verifyJWT , async(req , res)=>{
+            const email = req.query.email;
+            const query = {email: email};
+            const result = await usersCollection.findOne(query);
             res.send(result);
         });
 
@@ -82,6 +90,12 @@ async function run() {
             const query = { email };
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' });
+        });
+
+        app.get('/buyers' , verifyJWT , async(req , res)=>{
+            const query = {role: 'user'};
+            const result = await usersCollection.find(query).toArray();
+            res.send(result);
         });
 
     }
