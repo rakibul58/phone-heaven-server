@@ -38,11 +38,12 @@ async function run() {
         // collections
         const categoriesCollection = client.db("mobileHeaven").collection("categories");
         const usersCollection = client.db("mobileHeaven").collection("users");
+        const phonesCollection = client.db("mobileHeaven").collection("phones");
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
 
-            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '7d' });
             return res.send({ accessToken: token });
 
         });
@@ -95,6 +96,15 @@ async function run() {
         app.get('/buyers' , verifyJWT , async(req , res)=>{
             const query = {role: 'user'};
             const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        });
+
+
+        //phones\products post
+
+        app.post('/phones' , verifyJWT , async(req , res)=>{
+            const phone = req.body;
+            const result = await phonesCollection.insertOne(phone);
             res.send(result);
         });
 
