@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
@@ -56,9 +56,9 @@ async function run() {
         });
 
         //get  user
-        app.get('/users', verifyJWT , async(req , res)=>{
+        app.get('/users', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            const query = {email: email};
+            const query = { email: email };
             const result = await usersCollection.findOne(query);
             res.send(result);
         });
@@ -93,8 +93,8 @@ async function run() {
             res.send({ isAdmin: user?.role === 'admin' });
         });
 
-        app.get('/buyers' , verifyJWT , async(req , res)=>{
-            const query = {role: 'user'};
+        app.get('/buyers', verifyJWT, async (req, res) => {
+            const query = { role: 'user' };
             const result = await usersCollection.find(query).toArray();
             res.send(result);
         });
@@ -102,10 +102,10 @@ async function run() {
 
         //get phones/products
 
-        app.get('/phones', verifyJWT , async(req , res)=>{
+        app.get('/phones', verifyJWT, async (req, res) => {
 
             const email = req.query.email;
-            const query = {email: email};
+            const query = { email: email };
             const result = await phonesCollection.find(query).toArray();
             res.send(result);
 
@@ -114,11 +114,37 @@ async function run() {
 
         //phones\products post
 
-        app.post('/phones' , verifyJWT , async(req , res)=>{
+        app.post('/phones', verifyJWT, async (req, res) => {
             const phone = req.body;
             const result = await phonesCollection.insertOne(phone);
             res.send(result);
         });
+
+        //update a phone
+        app.put('/phones/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    advertised: true
+                }
+            };
+            const result = await phonesCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        app.get('/addStatus', async (req, res) => {
+            const filter = {};
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    status: "unsold"
+                }
+            };
+            const result = await phonesCollection.updateMany(filter, updatedDoc, options);
+            res.send(result);
+        })
 
     }
     finally {
