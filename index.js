@@ -134,17 +134,23 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/addStatus', async (req, res) => {
-            const filter = {};
-            const options = { upsert: true };
-            const updatedDoc = {
-                $set: {
-                    status: "unsold"
-                }
-            };
-            const result = await phonesCollection.updateMany(filter, updatedDoc, options);
+        app.get('/advertisedPhones', async (req, res) => {
+            const query = { advertised: true, status: "unsold" };
+            const result = await phonesCollection.find(query).toArray();
             res.send(result);
-        })
+        });
+
+        // app.get('/addStatus', async (req, res) => {
+        //     const filter = {};
+        //     const options = { upsert: true };
+        //     const updatedDoc = {
+        //         $set: {
+        //             status: "unsold"
+        //         }
+        //     };
+        //     const result = await phonesCollection.updateMany(filter, updatedDoc, options);
+        //     res.send(result);
+        // })
 
     }
     finally {
