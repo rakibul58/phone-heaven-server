@@ -55,6 +55,14 @@ async function run() {
             res.send(result);
         });
 
+        //fetch a category
+        app.get('/categories/:id' , async(req , res)=>{
+            const id  = req.params.id;
+            const query = {category: id};
+            const result = await phonesCollection.find(query).toArray();
+            res.send(result);
+        })
+
         //get  user
         app.get('/users', verifyJWT, async (req, res) => {
             const email = req.query.email;
