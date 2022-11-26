@@ -100,6 +100,18 @@ async function run() {
         });
 
 
+        //get phones/products
+
+        app.get('/phones', verifyJWT , async(req , res)=>{
+
+            const email = req.query.email;
+            const query = {email: email};
+            const result = await phonesCollection.find(query).toArray();
+            res.send(result);
+
+        });
+
+
         //phones\products post
 
         app.post('/phones' , verifyJWT , async(req , res)=>{
