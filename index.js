@@ -3,6 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const { query } = require('express');
 
 const port = process.env.PORT || 5000;
 
@@ -226,6 +227,11 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/reports', verifyJWT, async (req, res) => {
+            const filter = { reported: true }
+            const result = await phonesCollection.find(filter).toArray();
+            res.send(result);
+        });
 
         app.put('/reports/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
@@ -237,6 +243,13 @@ async function run() {
                 }
             };
             const result = await phonesCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        app.delete('/reports/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const result = await phonesCollection.deleteOne(filter);
             res.send(result);
         });
 
