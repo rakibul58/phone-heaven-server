@@ -88,6 +88,14 @@ async function run() {
             res.send(result);
         });
 
+        //for buyers
+        app.get('/users/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isUser: user?.role === 'user' });
+        });
+
         // for selllers 
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
@@ -131,6 +139,18 @@ async function run() {
             };
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             const updatePhones = await phonesCollection.updateMany(query , updatedDoc);
+            res.send(result);
+        });
+
+        //Delete sellers
+        app.delete('/sellers/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const email = req.query.email;
+            const query = {email: email};
+            const filter = { _id: ObjectId(id) }
+    
+            const result = await usersCollection.deleteOne(filter);
+            const deletePhones = await phonesCollection.deleteMany(query);
             res.send(result);
         });
 
