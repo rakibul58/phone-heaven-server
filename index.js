@@ -58,13 +58,13 @@ async function run() {
         //fetch category
         app.get('/categories/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const result = await categoriesCollection.findOne(query);
             res.send(result);
         });
 
 
-        
+
 
         //get  user
         app.get('/users', verifyJWT, async (req, res) => {
@@ -110,6 +110,30 @@ async function run() {
             res.send(result);
         });
 
+        //get sellers
+        app.get('/sellers', verifyJWT, async (req, res) => {
+            const query = { role: 'seller' };
+            const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        //verify sellers
+        app.put('/sellers/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const email = req.query.email;
+            const query = {email: email};
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    verified: true
+                }
+            };
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            const updatePhones = await phonesCollection.updateMany(query , updatedDoc);
+            res.send(result);
+        });
+
 
         //get phones/products
 
@@ -123,9 +147,9 @@ async function run() {
         });
 
         //fetch a phones by category
-        app.get('/phones/:id' , async(req , res)=>{
-            const id  = req.params.id;
-            const query = {category: id};
+        app.get('/phones/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { category: id };
             const result = await phonesCollection.find(query).toArray();
             res.send(result);
         });
@@ -160,9 +184,9 @@ async function run() {
         });
 
         //delete a phone
-        app.delete('/phones/:id' , verifyJWT , async (req , res)=>{
+        app.delete('/phones/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: ObjectId(id)};
+            const filter = { _id: ObjectId(id) };
             const result = await phonesCollection.deleteOne(filter);
             res.send(result);
         });
