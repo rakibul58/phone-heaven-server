@@ -218,9 +218,16 @@ async function run() {
         app.delete('/phones/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
-            const query = {phone_id: id}
+            const query = { phone_id: id }
             const result = await phonesCollection.deleteOne(filter);
             const deleteBooking = await bookingsCollection.deleteOne(query);
+            res.send(result);
+        });
+
+        app.get('/bookings', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const filter = {customer_email: email};
+            const result = await bookingsCollection.find(filter).toArray();
             res.send(result);
         });
 
