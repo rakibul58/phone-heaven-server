@@ -55,13 +55,16 @@ async function run() {
             res.send(result);
         });
 
-        //fetch a category
-        app.get('/categories/:id' , async(req , res)=>{
-            const id  = req.params.id;
-            const query = {category: id};
-            const result = await phonesCollection.find(query).toArray();
+        //fetch category
+        app.get('/categories/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await categoriesCollection.findOne(query);
             res.send(result);
-        })
+        });
+
+
+        
 
         //get  user
         app.get('/users', verifyJWT, async (req, res) => {
@@ -119,6 +122,14 @@ async function run() {
 
         });
 
+        //fetch a phones by category
+        app.get('/phones/:id' , async(req , res)=>{
+            const id  = req.params.id;
+            const query = {category: id};
+            const result = await phonesCollection.find(query).toArray();
+            res.send(result);
+        });
+
 
         //phones\products post
 
@@ -145,6 +156,14 @@ async function run() {
         app.get('/advertisedPhones', async (req, res) => {
             const query = { advertised: true, status: "unsold" };
             const result = await phonesCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        //delete a phone
+        app.delete('/phones/:id' , verifyJWT , async (req , res)=>{
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await phonesCollection.deleteOne(filter);
             res.send(result);
         });
 
