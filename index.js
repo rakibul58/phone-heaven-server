@@ -227,6 +227,20 @@ async function run() {
         });
 
 
+        app.put('/reports/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    reported: true
+                }
+            };
+            const result = await phonesCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+
         // app.get('/addStatus', async (req, res) => {
         //     const filter = {};
         //     const options = { upsert: true };
