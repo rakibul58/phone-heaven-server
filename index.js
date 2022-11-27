@@ -120,6 +120,15 @@ async function run() {
             res.send(result);
         });
 
+        //Delete buyers
+        app.delete('/buyers/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        });
+
+
         //get sellers
         app.get('/sellers', verifyJWT, async (req, res) => {
             const query = { role: 'seller' };
@@ -131,7 +140,7 @@ async function run() {
         app.put('/sellers/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const email = req.query.email;
-            const query = {email: email};
+            const query = { email: email };
             const filter = { _id: ObjectId(id) }
             const options = { upsert: true };
             const updatedDoc = {
@@ -140,7 +149,7 @@ async function run() {
                 }
             };
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
-            const updatePhones = await phonesCollection.updateMany(query , updatedDoc);
+            const updatePhones = await phonesCollection.updateMany(query, updatedDoc);
             res.send(result);
         });
 
@@ -148,9 +157,9 @@ async function run() {
         app.delete('/sellers/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const email = req.query.email;
-            const query = {email: email};
+            const query = { email: email };
             const filter = { _id: ObjectId(id) }
-    
+
             const result = await usersCollection.deleteOne(filter);
             const deletePhones = await phonesCollection.deleteMany(query);
             res.send(result);
@@ -209,7 +218,9 @@ async function run() {
         app.delete('/phones/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
+            const query = {phone_id: id}
             const result = await phonesCollection.deleteOne(filter);
+            const deleteBooking = await bookingsCollection.deleteOne(query);
             res.send(result);
         });
 
@@ -217,7 +228,7 @@ async function run() {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking);
             const id = req.params.id;
-            const filter = {_id: ObjectId(id)};
+            const filter = { _id: ObjectId(id) };
             const updatedDoc = {
                 $set: {
                     status: "booked"
