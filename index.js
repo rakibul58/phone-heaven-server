@@ -39,6 +39,7 @@ async function run() {
         const categoriesCollection = client.db("mobileHeaven").collection("categories");
         const usersCollection = client.db("mobileHeaven").collection("users");
         const phonesCollection = client.db("mobileHeaven").collection("phones");
+        const bookingsCollection = client.db("mobileHeaven").collection("bookings");
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -210,6 +211,21 @@ async function run() {
             const result = await phonesCollection.deleteOne(filter);
             res.send(result);
         });
+
+        app.post('/bookings/:id', verifyJWT, async (req, res) => {
+            const booking = req.body;
+            const result = await bookingsCollection.insertOne(booking);
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const updatedDoc = {
+                $set: {
+                    status: "booked"
+                }
+            };
+            const updateStatus = await phonesCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        });
+
 
         // app.get('/addStatus', async (req, res) => {
         //     const filter = {};
