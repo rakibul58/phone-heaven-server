@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { query } = require('express');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const port = process.env.PORT || 5000;
 
@@ -41,6 +42,7 @@ async function run() {
         const usersCollection = client.db("mobileHeaven").collection("users");
         const phonesCollection = client.db("mobileHeaven").collection("phones");
         const bookingsCollection = client.db("mobileHeaven").collection("bookings");
+        const paymentsCollection = client.db("mobileHeaven").collection("payments");
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -231,6 +233,13 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/bookings/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await bookingsCollection.findOne(filter);
+            res.send(result);
+        });
+
         app.post('/bookings/:id', verifyJWT, async (req, res) => {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking);
@@ -268,6 +277,49 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const result = await phonesCollection.deleteOne(filter);
+            res.send(result);
+        });
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ],
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+        app.post('/payments' , async(req , res)=>{
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            const _id = payment.bookingId;
+            const filter = {_id: ObjectId(_id)};
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+
+            const phone_id = payment.phoneId;
+            const query = {_id: ObjectId(phone_id)};
+            const updatedPhone = {
+                $set: {
+                    status: "sold",
+                }
+            }
+
+            const updatedResult = await bookingsCollection.updateOne(filter , updatedDoc);
+            const phoneResult = await phonesCollection.updateOne(query , updatedPhone);
+    
             res.send(result);
         });
 
