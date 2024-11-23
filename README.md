@@ -1,4 +1,4 @@
-# Mobile Heaven
+# Phone Heaven
 
 Backend API for the Mobile Heaven used phone marketplace. Built with Node.js, Express, and MongoDB.
 
